@@ -632,12 +632,25 @@ function VRoad({
     setActive(null);
     setCaret(null);
   }
+  function start(e) {
+    const el = stageRef.current;
+    if (el && el.setPointerCapture) {
+      try {
+        el.setPointerCapture(e.pointerId);
+      } catch (_) {}
+    }
+    locate(e);
+  }
+  function leave(e) {
+    if (!e || e.pointerType !== "touch") clear();
+  }
   return /*#__PURE__*/React.createElement("div", {
     className: "vstage",
     ref: stageRef,
+    onPointerDown: start,
     onPointerMove: locate,
-    onPointerDown: locate,
-    onPointerLeave: clear
+    onPointerCancel: clear,
+    onPointerLeave: leave
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "v3dtoggle" + (threeD ? " is-on" : ""),

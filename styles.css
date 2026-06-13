@@ -584,7 +584,7 @@ textarea.input { resize: vertical; min-height: 64px; }
   position: relative; flex: 1 1 auto; min-height: 0;
   height: min(70vh, 620px);
   display: flex; align-items: stretch; justify-content: flex-end;
-  margin: 6px 0 2px; padding: 20px 10px 20px 0; touch-action: pan-y;
+  margin: 6px 0 2px; padding: 20px 10px 20px 0; touch-action: none;
 }
 .vroad { position: relative; width: 74px; height: 100%; }
 .vroad-track {

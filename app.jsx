@@ -408,9 +408,17 @@ function VRoad({ pledges }) {
     setActive(hit ? hit.id : null);
   }
   function clear() { setActive(null); setCaret(null); }
+  function start(e) {
+    const el = stageRef.current;
+    if (el && el.setPointerCapture) { try { el.setPointerCapture(e.pointerId); } catch (_) {} }
+    locate(e);
+  }
+  function leave(e) { if (!e || e.pointerType !== "touch") clear(); }
 
   return (
-    <div className="vstage" ref={stageRef} onPointerMove={locate} onPointerDown={locate} onPointerLeave={clear}>
+    <div className="vstage" ref={stageRef}
+      onPointerDown={start} onPointerMove={locate}
+      onPointerCancel={clear} onPointerLeave={leave}>
       <button type="button" className={"v3dtoggle" + (threeD ? " is-on" : "")}
         onClick={() => setThreeD((v) => !v)} aria-pressed={threeD}
         title="Toggle Cover Flow depth">
