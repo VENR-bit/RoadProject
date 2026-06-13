@@ -332,7 +332,7 @@ function VRoad({ pledges }) {
       onPointerDown={start} onPointerMove={locate}
       onPointerCancel={clear} onPointerLeave={leave}>
       <div className="vlegend">
-        <span><i className="vleg--pledged" /> Pledged <b>{fmt(pledgedFeet)}{"\u00a0"}ft</b></span>
+        <span><i className="vleg--pledged" /> Pledge to support <b>{fmt(pledgedFeet)}{"\u00a0"}ft</b></span>
         <span><i className="vleg--open" /> To be paved <b>{fmt(blankFeet)}{"\u00a0"}ft</b></span>
       </div>
       <div className={"vroad" + (rolling ? " vroad--rolling" : "")} style={{ "--roll-ms": ROLL_MS + "ms" }}>

@@ -514,7 +514,7 @@ function VRoad({
     className: "vlegend"
   }, /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
     className: "vleg--pledged"
-  }), " Pledged ", /*#__PURE__*/React.createElement("b", null, fmt(pledgedFeet), "\u00a0", "ft")), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
+  }), " Pledge to support ", /*#__PURE__*/React.createElement("b", null, fmt(pledgedFeet), "\u00a0", "ft")), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
     className: "vleg--open"
   }), " To be paved ", /*#__PURE__*/React.createElement("b", null, fmt(blankFeet), "\u00a0", "ft"))), /*#__PURE__*/React.createElement("div", {
     className: "vroad" + (rolling ? " vroad--rolling" : ""),
