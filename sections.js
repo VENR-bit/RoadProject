@@ -15,39 +15,39 @@ const PROJECT = {
   // LKR per linear foot
   totalBudget: 5412000,
   // LKR (2,000 ft × 2,706)
-  fullLengthFt: 1900,
   fullLengthKm: 1.9,
+  fullLengthFt: 6200,
+  // 1.9 km ≈ 6,200 ft (full road length)
   width: 8,
   // ft
   thickness: 4,
   // in
   mapUrl: "https://maps.app.goo.gl/ZbSeubxqA7pg2tbQ6"
 };
-const COST_LINES = [{
+
+// Where the "Donate" button sends supporters. Replace with the real
+// payment link / bank-details page once provided.
+const DONATE_URL = "#";
+
+// Total material requirement for the 2,000 ft concrete scope (1:3:5 mix).
+const MATERIALS = [{
   mat: "Cement",
-  sub: "50kg standard bags · 1:3:5 mix",
-  qty: "0.440 bags",
-  rate: "2,050.00",
-  total: "902.00"
+  sub: "50 kg standard bags",
+  qty: "880",
+  unit: "bags"
 }, {
   mat: "River Sand",
   sub: "Fine aggregate",
-  qty: "0.016 cubes",
-  rate: "26,000.00",
-  total: "416.00"
+  qty: "32",
+  unit: "cubes"
 }, {
   mat: "Coarse Aggregate",
   sub: "Crushed metal",
-  qty: "0.028 cubes",
-  rate: "21,000.00",
-  total: "588.00"
-}, {
-  mat: "Direct On-site Labour",
-  sub: "Fixed allocation",
-  qty: "—",
-  rate: "—",
-  total: "800.00"
+  qty: "56",
+  unit: "cubes"
 }];
+const MATERIAL_COST = 3812000; // LKR — total materials across 2,000 ft
+const LABOUR_COST = 1600000; // LKR — total direct on-site labour
 
 /* ----------------------------- Formatting ------------------------------- */
 const fmt = n => Math.round(n).toLocaleString("en-US");
@@ -58,33 +58,94 @@ const LKR = ({
 }, "LKR"), " ", children);
 
 /* ----------------------------- Icons ------------------------------------ */
+let _lotusN = 0;
 function Lotus({
   className
 }) {
+  // Unique gradient ids so multiple lotuses on the page don't collide.
+  const uid = useMemo(() => "lt" + ++_lotusN, []);
   return /*#__PURE__*/React.createElement("svg", {
-    className: className,
-    viewBox: "0 0 64 64",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: "2",
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
+    className: "lotus " + (className || ""),
+    viewBox: "0 26 200 120",
+    role: "img",
+    "aria-label": "Lotus"
+  }, /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement("linearGradient", {
+    id: uid + "f",
+    x1: "0",
+    y1: "0",
+    x2: "0",
+    y2: "1"
+  }, /*#__PURE__*/React.createElement("stop", {
+    offset: "0",
+    stopColor: "#9c6c3f"
+  }), /*#__PURE__*/React.createElement("stop", {
+    offset: "1",
+    stopColor: "#6e4a28"
+  })), /*#__PURE__*/React.createElement("linearGradient", {
+    id: uid + "b",
+    x1: "0",
+    y1: "0",
+    x2: "0",
+    y2: "1"
+  }, /*#__PURE__*/React.createElement("stop", {
+    offset: "0",
+    stopColor: "#835833"
+  }), /*#__PURE__*/React.createElement("stop", {
+    offset: "1",
+    stopColor: "#5d3f23"
+  })), /*#__PURE__*/React.createElement("linearGradient", {
+    id: uid + "o",
+    x1: "0",
+    y1: "0",
+    x2: "0",
+    y2: "1"
+  }, /*#__PURE__*/React.createElement("stop", {
+    offset: "0",
+    stopColor: "#6b4626"
+  }), /*#__PURE__*/React.createElement("stop", {
+    offset: "1",
+    stopColor: "#46301a"
+  })), /*#__PURE__*/React.createElement("linearGradient", {
+    id: uid + "c",
+    x1: "0",
+    y1: "0",
+    x2: "0",
+    y2: "1"
+  }, /*#__PURE__*/React.createElement("stop", {
+    offset: "0",
+    stopColor: "#6c5443"
+  }), /*#__PURE__*/React.createElement("stop", {
+    offset: "1",
+    stopColor: "#443429"
+  }))), /*#__PURE__*/React.createElement("g", {
+    stroke: "#F8F4EB",
+    strokeWidth: "1.5",
+    strokeLinejoin: "round",
+    strokeLinecap: "round"
+  }, /*#__PURE__*/React.createElement("g", {
+    id: uid + "half"
   }, /*#__PURE__*/React.createElement("path", {
-    d: "M32 50c-9 0-17-5-20-12 4-2 9-2 13 0",
-    stroke: "var(--saffron)"
+    fill: `url(#${uid}b)`,
+    d: "M100 135 Q154.5 124.4 190.9 82.5 Q136.5 93.2 100 135 Z"
   }), /*#__PURE__*/React.createElement("path", {
-    d: "M32 50c9 0 17-5 20-12-4-2-9-2-13 0",
-    stroke: "var(--saffron)"
+    fill: `url(#${uid}b)`,
+    d: "M100 135 Q143.7 100.8 157.2 46.9 Q113.5 81.2 100 135 Z"
   }), /*#__PURE__*/React.createElement("path", {
-    d: "M32 50c-6-3-10-9-10-16 0-4 2-8 4-11",
-    stroke: "var(--forest-3)"
+    fill: `url(#${uid}o)`,
+    d: "M100 135 Q150.5 141.7 187.5 106.6 Q136.9 99.9 100 135 Z"
   }), /*#__PURE__*/React.createElement("path", {
-    d: "M32 50c6-3 10-9 10-16 0-4-2-8-4-11",
-    stroke: "var(--forest-3)"
+    fill: `url(#${uid}f)`,
+    d: "M100 135 Q148.1 118.1 165 70 Q116.9 86.9 100 135 Z"
   }), /*#__PURE__*/React.createElement("path", {
-    d: "M32 50c-3-4-4-10-4-16 0-7 2-13 4-18 2 5 4 11 4 18 0 6-1 12-4 16z",
-    stroke: "var(--forest)"
-  }));
+    fill: `url(#${uid}f)`,
+    d: "M100 135 Q136.4 99.3 131.5 48.5 Q95 84.3 100 135 Z"
+  })), /*#__PURE__*/React.createElement("use", {
+    href: `#${uid}half`,
+    transform: "translate(200 0) scale(-1 1)"
+  }), /*#__PURE__*/React.createElement("path", {
+    fill: `url(#${uid}c)`,
+    d: "M100 135 Q115 86 100 37 Q85 86 100 135 Z"
+  })));
 }
 function Ico({
   d,
@@ -159,11 +220,11 @@ function Hero({
     className: "hero__lotus"
   }, /*#__PURE__*/React.createElement(Lotus, null)), /*#__PURE__*/React.createElement("p", {
     className: "kicker kicker--center"
-  }, "A Path to Stillness"), /*#__PURE__*/React.createElement("h1", null, "Paving the road to the ", /*#__PURE__*/React.createElement("span", {
+  }, "A Path to Stillness"), /*#__PURE__*/React.createElement("h1", null, "Paving the road in concrete to the ", /*#__PURE__*/React.createElement("span", {
     className: "h-em"
   }, "forest monastery"), "."), /*#__PURE__*/React.createElement("p", {
     className: "hero__lede"
-  }, "A quiet gravel track winds 1.9\xA0km through the forest to Rideekanda Monastery. Help us lay ", /*#__PURE__*/React.createElement("strong", null, "2,000\xA0feet"), " of concrete \u2014 one linear foot at a time \u2014 so that meditation practitioners may walk and travel in peace."), /*#__PURE__*/React.createElement("div", {
+  }, "A quiet gravel track winds 1.9\xA0km (6,200\xA0ft) through the forest to Rideekanda Monastery. Help us lay ", /*#__PURE__*/React.createElement("strong", null, "2,000\xA0feet"), " of concrete \u2014 one linear foot at a time \u2014 so that meditation practitioners may walk and travel in peace."), /*#__PURE__*/React.createElement("div", {
     className: "hero__cta"
   }, /*#__PURE__*/React.createElement("a", {
     className: "btn btn--saffron",
@@ -190,7 +251,7 @@ function Hero({
     }
   }, "km")), /*#__PURE__*/React.createElement("div", {
     className: "lbl"
-  }, "Full road length")), /*#__PURE__*/React.createElement("div", {
+  }, "Full length \xB7 6,200 ft")), /*#__PURE__*/React.createElement("div", {
     className: "hero__stat"
   }, /*#__PURE__*/React.createElement("div", {
     className: "num"
@@ -255,7 +316,7 @@ function About() {
     className: "fact__k"
   }, "Full Length"), /*#__PURE__*/React.createElement("div", {
     className: "fact__v"
-  }, /*#__PURE__*/React.createElement("strong", null, "1.9 km"), " \xA0of forest track")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("strong", null, "1.9 km (6,200 ft)"), " \xA0of forest track")), /*#__PURE__*/React.createElement("div", {
     className: "fact"
   }, /*#__PURE__*/React.createElement("div", {
     className: "fact__k"
@@ -365,52 +426,32 @@ function Tech() {
   }, "880", /*#__PURE__*/React.createElement("small", null, " bags")), /*#__PURE__*/React.createElement("div", {
     className: "spec__k"
   }, "Cement allocation across the full 2,000 ft"))), /*#__PURE__*/React.createElement("div", {
-    className: "costtable"
+    className: "totals"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "costtable__head"
-  }, /*#__PURE__*/React.createElement("div", null, "Material / Element"), /*#__PURE__*/React.createElement("div", {
-    className: "num"
-  }, "Qty per ft"), /*#__PURE__*/React.createElement("div", {
-    className: "num"
-  }, "Unit rate"), /*#__PURE__*/React.createElement("div", {
-    className: "num"
-  }, "Cost / ft")), COST_LINES.map((r, i) => /*#__PURE__*/React.createElement("div", {
-    className: "costrow",
+    className: "totals__card"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "kicker"
+  }, "Total Material Requirement"), /*#__PURE__*/React.createElement("ul", {
+    className: "mreq"
+  }, MATERIALS.map((m, i) => /*#__PURE__*/React.createElement("li", {
     key: i
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "mat"
-  }, r.mat, /*#__PURE__*/React.createElement("span", null, r.sub)), /*#__PURE__*/React.createElement("div", {
-    className: "num",
-    "data-l": "Qty/ft"
-  }, r.qty), /*#__PURE__*/React.createElement("div", {
-    className: "num",
-    "data-l": "Rate"
-  }, r.rate), /*#__PURE__*/React.createElement("div", {
-    className: "num",
-    "data-l": "Cost/ft"
-  }, r.total))), /*#__PURE__*/React.createElement("div", {
-    className: "costrow costrow--total"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "mat"
-  }, "Total per linear foot"), /*#__PURE__*/React.createElement("div", {
-    className: "num"
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "num"
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "num",
-    "data-l": "Total"
-  }, "2,706.00"))), /*#__PURE__*/React.createElement("p", {
-    style: {
-      textAlign: "center",
-      fontSize: 13.5,
-      color: "var(--ink-faint)",
-      marginTop: 18
-    }
-  }, "Master project budget for the full 2,000 ft scope: ", /*#__PURE__*/React.createElement("strong", {
-    style: {
-      color: "var(--forest)"
-    }
-  }, "LKR 5,412,000"), " \xB7 includes a standard engineering contingency buffer for the uneven terrain.")));
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "mreq__mat"
+  }, m.mat, /*#__PURE__*/React.createElement("small", null, m.sub)), /*#__PURE__*/React.createElement("b", {
+    className: "mreq__qty"
+  }, m.qty, /*#__PURE__*/React.createElement("small", null, " ", m.unit))))), /*#__PURE__*/React.createElement("div", {
+    className: "totals__sum"
+  }, /*#__PURE__*/React.createElement("span", null, "Total material cost"), /*#__PURE__*/React.createElement("b", null, /*#__PURE__*/React.createElement(LKR, null, fmt(MATERIAL_COST))))), /*#__PURE__*/React.createElement("div", {
+    className: "totals__card"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "kicker"
+  }, "Total Cost of Labour"), /*#__PURE__*/React.createElement("p", {
+    className: "totals__note"
+  }, "Direct on-site labour for the full 2,000\xA0ft concrete scope \u2014 mixing, laying, levelling and finishing the 1:3:5 slab across the uneven terrain."), /*#__PURE__*/React.createElement("div", {
+    className: "totals__sum"
+  }, /*#__PURE__*/React.createElement("span", null, "Total labour cost"), /*#__PURE__*/React.createElement("b", null, /*#__PURE__*/React.createElement(LKR, null, fmt(LABOUR_COST)))))), /*#__PURE__*/React.createElement("div", {
+    className: "grandtotal"
+  }, /*#__PURE__*/React.createElement("span", null, "Master project budget \xB7 2,000\xA0ft concrete scope"), /*#__PURE__*/React.createElement("b", null, /*#__PURE__*/React.createElement(LKR, null, fmt(PROJECT.totalBudget))))));
 }
 Object.assign(window, {
   React,
@@ -419,7 +460,10 @@ Object.assign(window, {
   useRef,
   useMemo,
   PROJECT,
-  COST_LINES,
+  DONATE_URL,
+  MATERIALS,
+  MATERIAL_COST,
+  LABOUR_COST,
   fmt,
   LKR,
   Lotus,
@@ -430,4 +474,5 @@ Object.assign(window, {
   About,
   Tech
 });
+
 })();

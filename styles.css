@@ -149,7 +149,7 @@ h2.title {
 }
 .nav__inner { display: flex; align-items: center; justify-content: space-between; height: 68px; }
 .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
-.brand__mark { width: 30px; height: 30px; flex: none; }
+.brand__mark { width: 44px; height: auto; flex: none; }
 .brand__txt { display: flex; flex-direction: column; line-height: 1.05; }
 .brand__name { font-family: var(--display); font-size: 18px; color: var(--ink); }
 .brand__sub { font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-faint); }
@@ -170,7 +170,7 @@ h2.title {
 }
 .hero__inner { padding: clamp(56px, 9vw, 120px) 0 clamp(40px, 6vw, 80px); position: relative; z-index: 2; }
 .hero__lotus { display:flex; justify-content:center; margin-bottom: 26px; }
-.hero__lotus svg { width: 46px; height: 46px; }
+.hero__lotus svg { width: 72px; height: auto; }
 .hero h1 {
   font-size: clamp(40px, 7.4vw, 92px);
   line-height: 1.02;
@@ -466,7 +466,7 @@ textarea.input { resize: vertical; min-height: 64px; }
 .cta .lede { color: rgba(236,231,215,.78); margin: 0 auto 34px; }
 .cta__cta { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
 .cta__lotus { display:flex; justify-content:center; margin-bottom: 24px; }
-.cta__lotus svg { width: 42px; height: 42px; color: var(--saffron-soft); }
+.cta__lotus svg { width: 64px; height: auto; }
 
 .footer { background: #1c2417; color: rgba(236,231,215,.6); padding: 50px 0 40px; }
 .footer__inner { display:flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; align-items:center; }
@@ -783,3 +783,68 @@ textarea.input { resize: vertical; min-height: 64px; }
 @media (prefers-reduced-motion: reduce){
   .hero__inner > * { animation: none; }
 }
+
+/* ============================================================
+   ENGINEERING — total material requirement + total labour
+   (replaces the per-linear-foot cost table)
+   ============================================================ */
+.totals {
+  margin-top: clamp(40px, 5vw, 64px);
+  display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px;
+}
+@media (max-width: 760px){ .totals { grid-template-columns: 1fr; } }
+.totals__card {
+  background: var(--paper-2, #fff);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 26px 28px;
+  display: flex; flex-direction: column;
+}
+.totals__card .kicker { margin: 0 0 18px; }
+.mreq { list-style: none; margin: 0 0 4px; padding: 0; display: flex; flex-direction: column; }
+.mreq li {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 14px;
+  padding: 13px 0; border-bottom: 1px dashed var(--line-soft);
+}
+.mreq__mat { display: flex; flex-direction: column; font-weight: 600; color: var(--ink); font-size: 15px; }
+.mreq__mat small { font-weight: 400; font-size: 12px; color: var(--ink-faint); margin-top: 2px; letter-spacing: 0; text-transform: none; }
+.mreq__qty { font-family: var(--display); font-weight: 400; font-size: 22px; color: var(--forest); white-space: nowrap; }
+.mreq__qty small { font-family: var(--body); font-size: 12px; color: var(--ink-faint); }
+.totals__note { font-size: 14px; color: var(--ink-soft); line-height: 1.6; margin: 0 0 auto; }
+.totals__sum {
+  margin-top: 20px; padding-top: 18px; border-top: 2px solid var(--line);
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+}
+.totals__sum span { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; font-weight: 600; color: var(--ink-soft); }
+.totals__sum b { font-family: var(--display); font-weight: 400; font-size: clamp(22px, 3vw, 28px); color: var(--ink); }
+.grandtotal {
+  margin-top: 22px; padding: 20px 28px; border-radius: var(--radius);
+  background: var(--forest); color: #ECE7D7;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+.grandtotal span { font-size: 14px; color: rgba(236,231,215,.82); }
+.grandtotal b { font-family: var(--display); font-weight: 400; font-size: clamp(22px, 3.4vw, 30px); color: #F4EFD9; }
+.grandtotal .lkr { color: var(--saffron-soft); }
+
+/* ============================================================
+   PAVE THE ROAD — stacked: pledge · road progress · supporters
+   ============================================================ */
+.paver__pledge {
+  max-width: 480px; margin: clamp(34px, 5vw, 52px) auto 0;
+}
+/* inline road-progress panel — mirrors the floating pop-up's panel */
+.progress-inline { margin-top: clamp(36px, 5vw, 56px); display: flex; justify-content: center; }
+.progress-inline__panel {
+  position: relative; width: min(620px, 100%);
+  background: linear-gradient(180deg, #2f3c28 0%, #26301f 100%);
+  color: #ECE7D7; border-radius: 22px;
+  border: 1px solid rgba(236,231,215,.12);
+  box-shadow: 0 30px 80px rgba(0,0,0,.4);
+  padding: 24px 26px 22px;
+  display: flex; flex-direction: column;
+}
+.progress-inline__panel .vstage { height: min(62vh, 560px); }
+
+/* lotus mark inside the pledge success card */
+.lotus--mark { width: 56px; height: auto; }

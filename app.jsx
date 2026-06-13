@@ -1,17 +1,15 @@
-/* global React, PROJECT, fmt, LKR, Lotus, Ico, ICONS, Nav, Hero, About, Tech */
+/* global React, PROJECT, DONATE_URL, fmt, LKR, Lotus, Ico, ICONS, Nav, Hero, About, Tech */
 const { useState, useEffect, useRef, useMemo } = window;
 
-const LANES = 5;
-const FT_PER_LANE = PROJECT.totalFeet / LANES; // 400
-const STORE_KEY = "rideekanda_pledges_v1";
+const STORE_KEY = "rideekanda_pledges_v2";
 
 const SEED = [
-  { id: "s1", name: "The Silva Family", message: "For our late mother.", feet: 60, donated: true },
-  { id: "s2", name: "Anonymous", message: "", feet: 100, donated: true },
-  { id: "s3", name: "Dhamma Friends, Colombo", message: "May all beings be at ease.", feet: 75, donated: true },
-  { id: "s4", name: "Nimal & Kumari", message: "", feet: 40, donated: false },
-  { id: "s5", name: "A. Fernando", message: "In gratitude.", feet: 25, donated: true },
-  { id: "s6", name: "Meditation Group, Kandy", message: "", feet: 50, donated: false },
+  { id: "s1", name: "The Silva Family", message: "For our late mother.", feet: 60 },
+  { id: "s2", name: "Anonymous", message: "", feet: 100 },
+  { id: "s3", name: "Dhamma Friends, Colombo", message: "May all beings be at ease.", feet: 75 },
+  { id: "s4", name: "Nimal & Kumari", message: "", feet: 40 },
+  { id: "s5", name: "A. Fernando", message: "In gratitude.", feet: 25 },
+  { id: "s6", name: "Meditation Group, Kandy", message: "", feet: 50 },
 ];
 
 function loadPledges() {
@@ -22,80 +20,8 @@ function loadPledges() {
   return SEED.slice();
 }
 
-/* ===================== ROAD VISUAL (single bar) ===================== */
-function Road({ pledges, pavedFeet, newId }) {
-  const total = PROJECT.totalFeet;
-  // Completed (black) first, then pledged (grey dotted), then blank remainder.
-  const donated = pledges.filter((p) => p.donated);
-  const pledged = pledges.filter((p) => !p.donated);
-  const ordered = [...donated, ...pledged];
-  let cursor = 0;
-  const spans = ordered.map((p) => {
-    const start = cursor; cursor += p.feet;
-    return { ...p, start, end: cursor, mid: start + p.feet / 2 };
-  });
-
-  const [active, setActive] = useState(null);
-  const [caret, setCaret] = useState(null);
-  const trackRef = useRef(null);
-
-  function locate(e) {
-    const el = trackRef.current; if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    setCaret(x * 100);
-    const ft = x * total;
-    const hit = spans.find((s) => ft >= s.start && ft < s.end);
-    setActive(hit ? hit.id : null);
-  }
-  function clear() { setActive(null); setCaret(null); }
-
-  return (
-    <div className="roadbox">
-      <div className="rbar-stage" onPointerMove={locate} onPointerDown={locate} onPointerLeave={clear}>
-        <div className="rbar">
-          <div className="rbar-track" ref={trackRef}>
-            {spans.map((s) => (
-              <div key={s.id}
-                className={"rseg " + (s.donated ? "rseg--done" : "rseg--pledged") + (active === s.id ? " is-active" : "") + (s.id === newId ? " rseg--new" : "")}
-                style={{ left: (s.start / total) * 100 + "%", width: (s.feet / total) * 100 + "%" }} />
-            ))}
-            {caret != null && <div className="rcaret" style={{ left: caret + "%" }} />}
-          </div>
-          {(() => {
-            const TIERS = [72, 40, 104]; // jagged tiers; cycled per side so neighbours never share a row
-            let upN = 0, downN = 0;
-            return spans.map((s, i) => {
-              const isActive = active === s.id;
-              const up = i % 2 === 0;
-              const elev = TIERS[(up ? upN++ : downN++) % TIERS.length];
-              const midPct = (s.mid / total) * 100;
-              const rightAnchor = midPct > 68; // flip near right edge so the name stays inside the chart
-              return (
-                <div key={"p" + s.id}
-                  className={"rptr " + (up ? "rptr--up" : "rptr--down") + (isActive ? " is-active" : "")}
-                  style={{ left: midPct + "%", "--h": elev + "px" }}
-                  onMouseEnter={() => setActive(s.id)} onMouseLeave={() => setActive(null)}>
-                  <div className="rptr__dot" />
-                  <div className="rptr__line" />
-                  <div className={"rlabel" + (s.donated ? "" : " rlabel--pledged") + (rightAnchor ? " rlabel--ra" : "")}>
-                    <span className="rlabel__ft">{s.feet}ft</span> {s.name}
-                  </div>
-                </div>
-              );
-            });
-          })()}
-        </div>
-      </div>
-      <div className="ruler">
-        {[0, 400, 800, 1200, 1600, 2000].map((m) => (<span key={m}>{m === 0 ? "0 ft" : m === 2000 ? "2,000 ft" : fmt(m)}</span>))}
-      </div>
-    </div>
-  );
-}
-
 /* ===================== PLEDGE CARD ===================== */
-function PledgeCard({ remaining, onPledge, onDonate, justPledged, onReset }) {
+function PledgeCard({ remaining, onPledge, justPledged, onReset }) {
   const [name, setName] = useState("");
   const [feet, setFeet] = useState(10);
   const [message, setMessage] = useState("");
@@ -116,29 +42,32 @@ function PledgeCard({ remaining, onPledge, onDonate, justPledged, onReset }) {
   }
 
   if (justPledged) {
-    const done = justPledged.donated;
+    const amount = `LKR ${fmt(justPledged.feet * PROJECT.costPerFoot)}`;
+    const hasLink = DONATE_URL && DONATE_URL !== "#";
     return (
       <div className="pledge">
-        <div style={{textAlign:"center", marginBottom: 6}}><Lotus className="" /></div>
-        <h3 style={{textAlign:"center"}}>{done ? "Sādhu! Thank you." : "Your feet are reserved."}</h3>
+        <div style={{textAlign:"center", marginBottom: 6}}><Lotus className="lotus--mark" /></div>
+        <h3 style={{textAlign:"center"}}>Your stretch is reserved.</h3>
         <p className="pledge__hint" style={{textAlign:"center"}}>
-          {done
-            ? <>Your gift of <b>{justPledged.feet} ft</b> is now part of the road. Your name marks it forever.</>
-            : <>You’ve pledged <b>{justPledged.feet} linear feet</b>. Complete your donation to lay the concrete.</>}
+          You’ve pledged <b>{justPledged.feet} linear feet</b>. Complete your donation to lay the concrete —
+          your name marks that stretch of the road.
         </p>
         <div className="pledge__cost">
-          <span className="l">{done ? "Donated" : "Amount to donate"}</span>
+          <span className="l">Amount to donate</span>
           <span className="v"><LKR>{fmt(justPledged.feet * PROJECT.costPerFoot)}</LKR></span>
         </div>
-        {!done && (
-          <button className="btn btn--saffron btn--block" onClick={() => onDonate(justPledged.id)}>
-            <Ico d={ICONS.heart} style={{width:18,height:18}} /> Donate {`LKR ${fmt(justPledged.feet * PROJECT.costPerFoot)}`}
-          </button>
-        )}
+        <a className="btn btn--saffron btn--block" href={DONATE_URL}
+           {...(hasLink ? { target: "_blank", rel: "noopener" } : {})}>
+          <Ico d={ICONS.heart} style={{width:18,height:18}} /> Donate {amount}
+        </a>
         <button className="btn btn--ghost btn--block" style={{marginTop:10}} onClick={onReset}>
-          {done ? "Pledge more feet" : "Pledge another stretch"}
+          Pledge another stretch
         </button>
-        {!done && <p className="pledge__note">Your stretch is held on the road below. It stays open (unpaved) until your donation is complete.</p>}
+        <p className="pledge__note">
+          {hasLink
+            ? "Your name appears in the supporters list below once your stretch is pledged."
+            : "A secure payment link will be added here shortly. Your stretch is already held on the road."}
+        </p>
       </div>
     );
   }
@@ -201,7 +130,7 @@ function PledgeCard({ remaining, onPledge, onDonate, justPledged, onReset }) {
 }
 
 /* ===================== PAVER SECTION ===================== */
-function Paver({ pledges, pavedFeet, pct, remaining, onPledge, onDonate, justPledged, setJustPledged, newId }) {
+function Paver({ pledges, pavedFeet, pct, remaining, onPledge, justPledged, setJustPledged }) {
   return (
     <section className="section paver" id="road">
       <div className="wrap">
@@ -212,31 +141,30 @@ function Paver({ pledges, pavedFeet, pct, remaining, onPledge, onDonate, justPle
             community comes together. The rough gravel that remains is the work still to be done.</p>
         </div>
 
-        <div className="roadmeta" style={{marginTop:44}}>
-          <div>
-            <div className="roadmeta__big"><b>{fmt(pavedFeet)}</b> of 2,000 ft paved</div>
-            <div className="roadmeta__sub">{fmt(remaining)} feet of forest road still open · {pct}% complete</div>
-          </div>
-          <div className="roadmeta__legend">
-            <span><i className="swatch swatch--done" /> Completed</span>
-            <span><i className="swatch swatch--pledged" /> Pledged</span>
-            <span><i className="swatch swatch--open" /> To be paved</span>
-          </div>
-        </div>
-
-        <div className="paver__layout">
-          <div>
-            <Road pledges={pledges} pavedFeet={pavedFeet} newId={newId} />
-            <Donors pledges={pledges} />
-          </div>
+        {/* 1 · Pledge a stretch */}
+        <div className="paver__pledge">
           <PledgeCard
             remaining={remaining}
             onPledge={onPledge}
-            onDonate={onDonate}
             justPledged={justPledged}
             onReset={() => setJustPledged(null)}
           />
         </div>
+
+        {/* 2 · Road progress (the same panel as the floating button opens) */}
+        <div className="progress-inline" id="progress">
+          <div className="progress-inline__panel">
+            <div className="pmodal__head">
+              <p className="kicker kicker--center">Road Progress</p>
+              <h3>Watch the road <em>roll out</em></h3>
+              <div className="pmodal__big"><b>{fmt(pavedFeet)}</b> of 2,000 ft pledged · {pct}% complete</div>
+            </div>
+            <VRoad pledges={pledges} />
+          </div>
+        </div>
+
+        {/* 3 · Supporters */}
+        <Donors pledges={pledges} />
       </div>
     </section>
   );
@@ -247,7 +175,7 @@ function Donors({ pledges }) {
   return (
     <div className="donors">
       <div className="donors__head">
-        <h4>Those who have given</h4>
+        <h4>Those who have pledged</h4>
         <span className="donors__count">{pledges.length} supporters</span>
       </div>
       <div className="donorgrid">
@@ -258,7 +186,6 @@ function Donors({ pledges }) {
               {p.name}
               {p.message && <div className="msg">“{p.message}”</div>}
             </div>
-            <span className={"donorcard__badge " + (p.donated ? "badge--done" : "badge--pledged")}>{p.donated ? "Donated" : "Pledged"}</span>
           </div>
         ))}
       </div>
@@ -267,11 +194,10 @@ function Donors({ pledges }) {
 }
 
 /* ===================== BUDGET ===================== */
-function Budget({ pavedFeet, pledgedLKR, donatedLKR }) {
+function Budget({ pavedFeet, pledgedLKR }) {
   const total = PROJECT.totalBudget;
-  const donatedPct = (donatedLKR / total) * 100;
-  const pledgedOnlyPct = ((pledgedLKR - donatedLKR) / total) * 100;
-  const remaining = total - pledgedLKR;
+  const pledgedPct = Math.min(100, (pledgedLKR / total) * 100);
+  const remaining = Math.max(0, total - pledgedLKR);
 
   return (
     <section className="section budget" id="budget">
@@ -281,15 +207,14 @@ function Budget({ pavedFeet, pledgedLKR, donatedLKR }) {
           <h2 className="title">Every rupee, <span className="h-em">accounted for</span>.</h2>
           <p className="lede" style={{marginBottom: 30}}>
             This is a community offering. The budget below moves the moment a pledge is made — what has been
-            donated, what has been pledged, and what is still needed to finish the road.
+            pledged, and what is still needed to finish the 2,000&nbsp;ft of concrete road.
           </p>
           <div className="bigbar">
             <div className="bigbar__track">
-              <div className="bigbar__done" style={{width: donatedPct + "%"}} />
-              <div className="bigbar__pledged" style={{width: pledgedOnlyPct + "%"}} />
+              <div className="bigbar__done" style={{width: pledgedPct + "%"}} />
             </div>
             <div className="bigbar__labels">
-              <span>{Math.round((pledgedLKR/total)*100)}% pledged</span>
+              <span>{Math.round(pledgedPct)}% pledged</span>
               <span>Goal · <LKR>{fmt(total)}</LKR></span>
             </div>
           </div>
@@ -303,13 +228,8 @@ function Budget({ pavedFeet, pledgedLKR, donatedLKR }) {
           </div>
           <div className="budrow">
             <div className="budrow__l"><span className="budrow__chip" style={{background:"var(--forest)"}} />
-              <div className="budrow__k">Donated &amp; collected<small>concrete already funded</small></div></div>
-            <div className="budrow__v"><LKR>{fmt(donatedLKR)}</LKR></div>
-          </div>
-          <div className="budrow">
-            <div className="budrow__l"><span className="budrow__chip" style={{background:"var(--saffron)"}} />
-              <div className="budrow__k">Pledged, awaiting donation<small>reserved feet not yet paid</small></div></div>
-            <div className="budrow__v"><LKR>{fmt(pledgedLKR - donatedLKR)}</LKR></div>
+              <div className="budrow__k">Pledged so far<small>{fmt(pavedFeet)} ft reserved by supporters</small></div></div>
+            <div className="budrow__v"><LKR>{fmt(pledgedLKR)}</LKR></div>
           </div>
           <div className="budrow">
             <div className="budrow__l"><span className="budrow__chip" style={{background:"var(--paper-3)", boxShadow:"inset 0 0 0 1.5px var(--gravel)"}} />
@@ -370,18 +290,14 @@ function Toast({ msg, show }) {
 const ROLL_MS = 1300;
 function VRoad({ pledges }) {
   const total = PROJECT.totalFeet;
-  const donated = pledges.filter((p) => p.donated);
-  const pledged = pledges.filter((p) => !p.donated);
-  const ordered = [...donated, ...pledged];
+  const ordered = pledges.slice();
   let cursor = 0;
   const spans = ordered.map((p) => {
     const start = cursor; cursor += p.feet;
     return { ...p, start, end: cursor, mid: start + p.feet / 2 };
   });
-  const pavedFeet = cursor;
-  const donatedFeet = donated.reduce((a, p) => a + p.feet, 0);
-  const pledgedFeet = pledged.reduce((a, p) => a + p.feet, 0);
-  const blankFeet = total - pavedFeet;
+  const pledgedFeet = cursor;
+  const blankFeet = total - pledgedFeet;
 
   const [active, setActive] = useState(null);
   const [caret, setCaret] = useState(null);
@@ -416,7 +332,6 @@ function VRoad({ pledges }) {
       onPointerDown={start} onPointerMove={locate}
       onPointerCancel={clear} onPointerLeave={leave}>
       <div className="vlegend">
-        <span><i className="vleg--done" /> Completed <b>{fmt(donatedFeet)}{"\u00a0"}ft</b></span>
         <span><i className="vleg--pledged" /> Pledged <b>{fmt(pledgedFeet)}{"\u00a0"}ft</b></span>
         <span><i className="vleg--open" /> To be paved <b>{fmt(blankFeet)}{"\u00a0"}ft</b></span>
       </div>
@@ -427,7 +342,7 @@ function VRoad({ pledges }) {
           <div className="vroad-surface">
             {spans.map((s) => (
               <div key={s.id}
-                className={"vseg " + (s.donated ? "vseg--done" : "vseg--pledged") + (active === s.id ? " is-active" : "")}
+                className={"vseg vseg--pledged" + (active === s.id ? " is-active" : "")}
                 style={{ bottom: (s.start / total) * 100 + "%", height: (s.feet / total) * 100 + "%" }} />
             ))}
           </div>
@@ -445,7 +360,7 @@ function VRoad({ pledges }) {
           const delay = (s.mid / total) * ROLL_MS + 180;
           return (
             <div key={"l" + s.id}
-              className={"vlabel" + (s.donated ? "" : " vlabel--pledged") + (isActive ? " is-active" : "")}
+              className={"vlabel vlabel--pledged" + (isActive ? " is-active" : "")}
               style={{ bottom: (s.mid / total) * 100 + "%", transform: "translateY(50%)" + (isActive ? " scale(1.16)" : ""), animationDelay: delay + "ms" }}
               onMouseEnter={() => setActive(s.id)} onMouseLeave={() => setActive(null)}>
               <span><span className="vlabel__ft">{s.feet}ft</span> {s.name}</span>
@@ -475,7 +390,7 @@ function ProgressFab({ pct, onClick }) {
 }
 
 /* ===================== PROGRESS MODAL ===================== */
-function ProgressModal({ open, onClose, pledges, pct, pavedFeet, donatedFeet }) {
+function ProgressModal({ open, onClose, pledges, pct, pavedFeet }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     if (!open) { setMounted(false); return; }
@@ -486,7 +401,6 @@ function ProgressModal({ open, onClose, pledges, pct, pavedFeet, donatedFeet }) 
   }, [open, onClose]);
 
   if (!open) return null;
-  const pledgedOnly = pavedFeet - donatedFeet;
 
   return (
     <div className={"pmodal" + (mounted ? " is-open" : "")} onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
@@ -497,7 +411,7 @@ function ProgressModal({ open, onClose, pledges, pct, pavedFeet, donatedFeet }) 
         <div className="pmodal__head">
           <p className="kicker kicker--center">The Road So Far</p>
           <h3>Watch the road <em>roll out</em></h3>
-          <div className="pmodal__big"><b>{fmt(pavedFeet)}</b> of 2,000 ft underway · {pct}% complete</div>
+          <div className="pmodal__big"><b>{fmt(pavedFeet)}</b> of 2,000 ft pledged · {pct}% complete</div>
         </div>
         <VRoad pledges={pledges} />
       </div>
@@ -525,26 +439,18 @@ function App() {
   }
 
   const pavedFeet = useMemo(() => pledges.reduce((s, p) => s + p.feet, 0), [pledges]);
-  const donatedFeet = useMemo(() => pledges.filter(p=>p.donated).reduce((s,p)=>s+p.feet,0), [pledges]);
   const remaining = Math.max(0, PROJECT.totalFeet - pavedFeet);
   const pct = Math.round((pavedFeet / PROJECT.totalFeet) * 100);
   const pledgedLKR = pavedFeet * PROJECT.costPerFoot;
-  const donatedLKR = donatedFeet * PROJECT.costPerFoot;
 
   function handlePledge({ name, feet, message }) {
     const id = "p" + Date.now();
-    const p = { id, name, feet, message, donated: false };
+    const p = { id, name, feet, message };
     setPledges((list) => [...list, p]);
     setJustPledged(p);
     setNewId(id);
     flash(`${feet} ft reserved on the road — complete your donation below.`);
     setTimeout(() => { const el = document.getElementById("road"); if (el) window.scrollTo({ top: el.offsetTop - 60, behavior: "smooth" }); }, 60);
-  }
-
-  function handleDonate(id) {
-    setPledges((list) => list.map((p) => p.id === id ? { ...p, donated: true } : p));
-    setJustPledged((jp) => jp && jp.id === id ? { ...jp, donated: true } : jp);
-    flash("Sādhu! Your donation completes that stretch of road. 🙏");
   }
 
   return (
@@ -555,17 +461,17 @@ function App() {
       <Tech />
       <Paver
         pledges={pledges} pavedFeet={pavedFeet} pct={pct} remaining={remaining}
-        onPledge={handlePledge} onDonate={handleDonate}
-        justPledged={justPledged} setJustPledged={setJustPledged} newId={newId}
+        onPledge={handlePledge}
+        justPledged={justPledged} setJustPledged={setJustPledged}
       />
-      <Budget pavedFeet={pavedFeet} pledgedLKR={pledgedLKR} donatedLKR={donatedLKR} />
+      <Budget pavedFeet={pavedFeet} pledgedLKR={pledgedLKR} />
       <CTA />
       <Footer />
       <Toast msg={toast.msg} show={toast.show} />
       <ProgressFab pct={pct} onClick={() => setProgressOpen(true)} />
       <ProgressModal
         open={progressOpen} onClose={() => setProgressOpen(false)}
-        pledges={pledges} pct={pct} pavedFeet={pavedFeet} donatedFeet={donatedFeet}
+        pledges={pledges} pct={pct} pavedFeet={pavedFeet}
       />
     </React.Fragment>
   );

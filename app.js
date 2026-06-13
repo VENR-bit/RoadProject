@@ -1,51 +1,44 @@
 /* Compiled from app.jsx — do not edit directly; edit the .jsx source and recompile. */
 (function(){
-/* global React, PROJECT, fmt, LKR, Lotus, Ico, ICONS, Nav, Hero, About, Tech */
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+/* global React, PROJECT, DONATE_URL, fmt, LKR, Lotus, Ico, ICONS, Nav, Hero, About, Tech */
 const {
   useState,
   useEffect,
   useRef,
   useMemo
 } = window;
-const LANES = 5;
-const FT_PER_LANE = PROJECT.totalFeet / LANES; // 400
-const STORE_KEY = "rideekanda_pledges_v1";
+const STORE_KEY = "rideekanda_pledges_v2";
 const SEED = [{
   id: "s1",
   name: "The Silva Family",
   message: "For our late mother.",
-  feet: 60,
-  donated: true
+  feet: 60
 }, {
   id: "s2",
   name: "Anonymous",
   message: "",
-  feet: 100,
-  donated: true
+  feet: 100
 }, {
   id: "s3",
   name: "Dhamma Friends, Colombo",
   message: "May all beings be at ease.",
-  feet: 75,
-  donated: true
+  feet: 75
 }, {
   id: "s4",
   name: "Nimal & Kumari",
   message: "",
-  feet: 40,
-  donated: false
+  feet: 40
 }, {
   id: "s5",
   name: "A. Fernando",
   message: "In gratitude.",
-  feet: 25,
-  donated: true
+  feet: 25
 }, {
   id: "s6",
   name: "Meditation Group, Kandy",
   message: "",
-  feet: 50,
-  donated: false
+  feet: 50
 }];
 function loadPledges() {
   try {
@@ -58,110 +51,10 @@ function loadPledges() {
   return SEED.slice();
 }
 
-/* ===================== ROAD VISUAL (single bar) ===================== */
-function Road({
-  pledges,
-  pavedFeet,
-  newId
-}) {
-  const total = PROJECT.totalFeet;
-  // Completed (black) first, then pledged (grey dotted), then blank remainder.
-  const donated = pledges.filter(p => p.donated);
-  const pledged = pledges.filter(p => !p.donated);
-  const ordered = [...donated, ...pledged];
-  let cursor = 0;
-  const spans = ordered.map(p => {
-    const start = cursor;
-    cursor += p.feet;
-    return {
-      ...p,
-      start,
-      end: cursor,
-      mid: start + p.feet / 2
-    };
-  });
-  const [active, setActive] = useState(null);
-  const [caret, setCaret] = useState(null);
-  const trackRef = useRef(null);
-  function locate(e) {
-    const el = trackRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    setCaret(x * 100);
-    const ft = x * total;
-    const hit = spans.find(s => ft >= s.start && ft < s.end);
-    setActive(hit ? hit.id : null);
-  }
-  function clear() {
-    setActive(null);
-    setCaret(null);
-  }
-  return /*#__PURE__*/React.createElement("div", {
-    className: "roadbox"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "rbar-stage",
-    onPointerMove: locate,
-    onPointerDown: locate,
-    onPointerLeave: clear
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "rbar"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "rbar-track",
-    ref: trackRef
-  }, spans.map(s => /*#__PURE__*/React.createElement("div", {
-    key: s.id,
-    className: "rseg " + (s.donated ? "rseg--done" : "rseg--pledged") + (active === s.id ? " is-active" : "") + (s.id === newId ? " rseg--new" : ""),
-    style: {
-      left: s.start / total * 100 + "%",
-      width: s.feet / total * 100 + "%"
-    }
-  })), caret != null && /*#__PURE__*/React.createElement("div", {
-    className: "rcaret",
-    style: {
-      left: caret + "%"
-    }
-  })), (() => {
-    const TIERS = [72, 40, 104]; // jagged tiers; cycled per side so neighbours never share a row
-    let upN = 0,
-      downN = 0;
-    return spans.map((s, i) => {
-      const isActive = active === s.id;
-      const up = i % 2 === 0;
-      const elev = TIERS[(up ? upN++ : downN++) % TIERS.length];
-      const midPct = s.mid / total * 100;
-      const rightAnchor = midPct > 68; // flip near right edge so the name stays inside the chart
-      return /*#__PURE__*/React.createElement("div", {
-        key: "p" + s.id,
-        className: "rptr " + (up ? "rptr--up" : "rptr--down") + (isActive ? " is-active" : ""),
-        style: {
-          left: midPct + "%",
-          "--h": elev + "px"
-        },
-        onMouseEnter: () => setActive(s.id),
-        onMouseLeave: () => setActive(null)
-      }, /*#__PURE__*/React.createElement("div", {
-        className: "rptr__dot"
-      }), /*#__PURE__*/React.createElement("div", {
-        className: "rptr__line"
-      }), /*#__PURE__*/React.createElement("div", {
-        className: "rlabel" + (s.donated ? "" : " rlabel--pledged") + (rightAnchor ? " rlabel--ra" : "")
-      }, /*#__PURE__*/React.createElement("span", {
-        className: "rlabel__ft"
-      }, s.feet, "ft"), " ", s.name));
-    });
-  })())), /*#__PURE__*/React.createElement("div", {
-    className: "ruler"
-  }, [0, 400, 800, 1200, 1600, 2000].map(m => /*#__PURE__*/React.createElement("span", {
-    key: m
-  }, m === 0 ? "0 ft" : m === 2000 ? "2,000 ft" : fmt(m)))));
-}
-
 /* ===================== PLEDGE CARD ===================== */
 function PledgeCard({
   remaining,
   onPledge,
-  onDonate,
   justPledged,
   onReset
 }) {
@@ -193,7 +86,8 @@ function PledgeCard({
     setFeet(10);
   }
   if (justPledged) {
-    const done = justPledged.donated;
+    const amount = `LKR ${fmt(justPledged.feet * PROJECT.costPerFoot)}`;
+    const hasLink = DONATE_URL && DONATE_URL !== "#";
     return /*#__PURE__*/React.createElement("div", {
       className: "pledge"
     }, /*#__PURE__*/React.createElement("div", {
@@ -202,40 +96,43 @@ function PledgeCard({
         marginBottom: 6
       }
     }, /*#__PURE__*/React.createElement(Lotus, {
-      className: ""
+      className: "lotus--mark"
     })), /*#__PURE__*/React.createElement("h3", {
       style: {
         textAlign: "center"
       }
-    }, done ? "Sādhu! Thank you." : "Your feet are reserved."), /*#__PURE__*/React.createElement("p", {
+    }, "Your stretch is reserved."), /*#__PURE__*/React.createElement("p", {
       className: "pledge__hint",
       style: {
         textAlign: "center"
       }
-    }, done ? /*#__PURE__*/React.createElement(React.Fragment, null, "Your gift of ", /*#__PURE__*/React.createElement("b", null, justPledged.feet, " ft"), " is now part of the road. Your name marks it forever.") : /*#__PURE__*/React.createElement(React.Fragment, null, "You\u2019ve pledged ", /*#__PURE__*/React.createElement("b", null, justPledged.feet, " linear feet"), ". Complete your donation to lay the concrete.")), /*#__PURE__*/React.createElement("div", {
+    }, "You\u2019ve pledged ", /*#__PURE__*/React.createElement("b", null, justPledged.feet, " linear feet"), ". Complete your donation to lay the concrete \u2014 your name marks that stretch of the road."), /*#__PURE__*/React.createElement("div", {
       className: "pledge__cost"
     }, /*#__PURE__*/React.createElement("span", {
       className: "l"
-    }, done ? "Donated" : "Amount to donate"), /*#__PURE__*/React.createElement("span", {
+    }, "Amount to donate"), /*#__PURE__*/React.createElement("span", {
       className: "v"
-    }, /*#__PURE__*/React.createElement(LKR, null, fmt(justPledged.feet * PROJECT.costPerFoot)))), !done && /*#__PURE__*/React.createElement("button", {
+    }, /*#__PURE__*/React.createElement(LKR, null, fmt(justPledged.feet * PROJECT.costPerFoot)))), /*#__PURE__*/React.createElement("a", _extends({
       className: "btn btn--saffron btn--block",
-      onClick: () => onDonate(justPledged.id)
-    }, /*#__PURE__*/React.createElement(Ico, {
+      href: DONATE_URL
+    }, hasLink ? {
+      target: "_blank",
+      rel: "noopener"
+    } : {}), /*#__PURE__*/React.createElement(Ico, {
       d: ICONS.heart,
       style: {
         width: 18,
         height: 18
       }
-    }), " Donate ", `LKR ${fmt(justPledged.feet * PROJECT.costPerFoot)}`), /*#__PURE__*/React.createElement("button", {
+    }), " Donate ", amount), /*#__PURE__*/React.createElement("button", {
       className: "btn btn--ghost btn--block",
       style: {
         marginTop: 10
       },
       onClick: onReset
-    }, done ? "Pledge more feet" : "Pledge another stretch"), !done && /*#__PURE__*/React.createElement("p", {
+    }, "Pledge another stretch"), /*#__PURE__*/React.createElement("p", {
       className: "pledge__note"
-    }, "Your stretch is held on the road below. It stays open (unpaved) until your donation is complete."));
+    }, hasLink ? "Your name appears in the supporters list below once your stretch is pledged." : "A secure payment link will be added here shortly. Your stretch is already held on the road."));
   }
   return /*#__PURE__*/React.createElement("div", {
     className: "pledge"
@@ -320,10 +217,8 @@ function Paver({
   pct,
   remaining,
   onPledge,
-  onDonate,
   justPledged,
-  setJustPledged,
-  newId
+  setJustPledged
 }) {
   return /*#__PURE__*/React.createElement("section", {
     className: "section paver",
@@ -345,37 +240,28 @@ function Paver({
   }, "concrete"), "."), /*#__PURE__*/React.createElement("p", {
     className: "lede"
   }, "Each pledge lays a real stretch of the 2,000-foot road. Watch it pave, foot by foot, as the community comes together. The rough gravel that remains is the work still to be done.")), /*#__PURE__*/React.createElement("div", {
-    className: "roadmeta",
-    style: {
-      marginTop: 44
-    }
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "roadmeta__big"
-  }, /*#__PURE__*/React.createElement("b", null, fmt(pavedFeet)), " of 2,000 ft paved"), /*#__PURE__*/React.createElement("div", {
-    className: "roadmeta__sub"
-  }, fmt(remaining), " feet of forest road still open \xB7 ", pct, "% complete")), /*#__PURE__*/React.createElement("div", {
-    className: "roadmeta__legend"
-  }, /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
-    className: "swatch swatch--done"
-  }), " Completed"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
-    className: "swatch swatch--pledged"
-  }), " Pledged"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
-    className: "swatch swatch--open"
-  }), " To be paved"))), /*#__PURE__*/React.createElement("div", {
-    className: "paver__layout"
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Road, {
-    pledges: pledges,
-    pavedFeet: pavedFeet,
-    newId: newId
-  }), /*#__PURE__*/React.createElement(Donors, {
-    pledges: pledges
-  })), /*#__PURE__*/React.createElement(PledgeCard, {
+    className: "paver__pledge"
+  }, /*#__PURE__*/React.createElement(PledgeCard, {
     remaining: remaining,
     onPledge: onPledge,
-    onDonate: onDonate,
     justPledged: justPledged,
     onReset: () => setJustPledged(null)
-  }))));
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "progress-inline",
+    id: "progress"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "progress-inline__panel"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "pmodal__head"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "kicker kicker--center"
+  }, "Road Progress"), /*#__PURE__*/React.createElement("h3", null, "Watch the road ", /*#__PURE__*/React.createElement("em", null, "roll out")), /*#__PURE__*/React.createElement("div", {
+    className: "pmodal__big"
+  }, /*#__PURE__*/React.createElement("b", null, fmt(pavedFeet)), " of 2,000 ft pledged \xB7 ", pct, "% complete")), /*#__PURE__*/React.createElement(VRoad, {
+    pledges: pledges
+  }))), /*#__PURE__*/React.createElement(Donors, {
+    pledges: pledges
+  })));
 }
 function Donors({
   pledges
@@ -385,7 +271,7 @@ function Donors({
     className: "donors"
   }, /*#__PURE__*/React.createElement("div", {
     className: "donors__head"
-  }, /*#__PURE__*/React.createElement("h4", null, "Those who have given"), /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("h4", null, "Those who have pledged"), /*#__PURE__*/React.createElement("span", {
     className: "donors__count"
   }, pledges.length, " supporters")), /*#__PURE__*/React.createElement("div", {
     className: "donorgrid"
@@ -398,21 +284,17 @@ function Donors({
     className: "donorcard__nm"
   }, p.name, p.message && /*#__PURE__*/React.createElement("div", {
     className: "msg"
-  }, "\u201C", p.message, "\u201D")), /*#__PURE__*/React.createElement("span", {
-    className: "donorcard__badge " + (p.donated ? "badge--done" : "badge--pledged")
-  }, p.donated ? "Donated" : "Pledged")))));
+  }, "\u201C", p.message, "\u201D"))))));
 }
 
 /* ===================== BUDGET ===================== */
 function Budget({
   pavedFeet,
-  pledgedLKR,
-  donatedLKR
+  pledgedLKR
 }) {
   const total = PROJECT.totalBudget;
-  const donatedPct = donatedLKR / total * 100;
-  const pledgedOnlyPct = (pledgedLKR - donatedLKR) / total * 100;
-  const remaining = total - pledgedLKR;
+  const pledgedPct = Math.min(100, pledgedLKR / total * 100);
+  const remaining = Math.max(0, total - pledgedLKR);
   return /*#__PURE__*/React.createElement("section", {
     className: "section budget",
     id: "budget"
@@ -429,23 +311,18 @@ function Budget({
     style: {
       marginBottom: 30
     }
-  }, "This is a community offering. The budget below moves the moment a pledge is made \u2014 what has been donated, what has been pledged, and what is still needed to finish the road."), /*#__PURE__*/React.createElement("div", {
+  }, "This is a community offering. The budget below moves the moment a pledge is made \u2014 what has been pledged, and what is still needed to finish the 2,000\xA0ft of concrete road."), /*#__PURE__*/React.createElement("div", {
     className: "bigbar"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bigbar__track"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bigbar__done",
     style: {
-      width: donatedPct + "%"
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "bigbar__pledged",
-    style: {
-      width: pledgedOnlyPct + "%"
+      width: pledgedPct + "%"
     }
   })), /*#__PURE__*/React.createElement("div", {
     className: "bigbar__labels"
-  }, /*#__PURE__*/React.createElement("span", null, Math.round(pledgedLKR / total * 100), "% pledged"), /*#__PURE__*/React.createElement("span", null, "Goal \xB7 ", /*#__PURE__*/React.createElement(LKR, null, fmt(total)))))), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, Math.round(pledgedPct), "% pledged"), /*#__PURE__*/React.createElement("span", null, "Goal \xB7 ", /*#__PURE__*/React.createElement(LKR, null, fmt(total)))))), /*#__PURE__*/React.createElement("div", {
     className: "budrows"
   }, /*#__PURE__*/React.createElement("div", {
     className: "budrow budrow--total"
@@ -471,22 +348,9 @@ function Budget({
     }
   }), /*#__PURE__*/React.createElement("div", {
     className: "budrow__k"
-  }, "Donated & collected", /*#__PURE__*/React.createElement("small", null, "concrete already funded"))), /*#__PURE__*/React.createElement("div", {
+  }, "Pledged so far", /*#__PURE__*/React.createElement("small", null, fmt(pavedFeet), " ft reserved by supporters"))), /*#__PURE__*/React.createElement("div", {
     className: "budrow__v"
-  }, /*#__PURE__*/React.createElement(LKR, null, fmt(donatedLKR)))), /*#__PURE__*/React.createElement("div", {
-    className: "budrow"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "budrow__l"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "budrow__chip",
-    style: {
-      background: "var(--saffron)"
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "budrow__k"
-  }, "Pledged, awaiting donation", /*#__PURE__*/React.createElement("small", null, "reserved feet not yet paid"))), /*#__PURE__*/React.createElement("div", {
-    className: "budrow__v"
-  }, /*#__PURE__*/React.createElement(LKR, null, fmt(pledgedLKR - donatedLKR)))), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(LKR, null, fmt(pledgedLKR)))), /*#__PURE__*/React.createElement("div", {
     className: "budrow"
   }, /*#__PURE__*/React.createElement("div", {
     className: "budrow__l"
@@ -590,9 +454,7 @@ function VRoad({
   pledges
 }) {
   const total = PROJECT.totalFeet;
-  const donated = pledges.filter(p => p.donated);
-  const pledged = pledges.filter(p => !p.donated);
-  const ordered = [...donated, ...pledged];
+  const ordered = pledges.slice();
   let cursor = 0;
   const spans = ordered.map(p => {
     const start = cursor;
@@ -604,10 +466,8 @@ function VRoad({
       mid: start + p.feet / 2
     };
   });
-  const pavedFeet = cursor;
-  const donatedFeet = donated.reduce((a, p) => a + p.feet, 0);
-  const pledgedFeet = pledged.reduce((a, p) => a + p.feet, 0);
-  const blankFeet = total - pavedFeet;
+  const pledgedFeet = cursor;
+  const blankFeet = total - pledgedFeet;
   const [active, setActive] = useState(null);
   const [caret, setCaret] = useState(null);
   const [rolling, setRolling] = useState(true);
@@ -653,8 +513,6 @@ function VRoad({
   }, /*#__PURE__*/React.createElement("div", {
     className: "vlegend"
   }, /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
-    className: "vleg--done"
-  }), " Completed ", /*#__PURE__*/React.createElement("b", null, fmt(donatedFeet), "\u00a0", "ft")), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
     className: "vleg--pledged"
   }), " Pledged ", /*#__PURE__*/React.createElement("b", null, fmt(pledgedFeet), "\u00a0", "ft")), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
     className: "vleg--open"
@@ -673,7 +531,7 @@ function VRoad({
     className: "vroad-surface"
   }, spans.map(s => /*#__PURE__*/React.createElement("div", {
     key: s.id,
-    className: "vseg " + (s.donated ? "vseg--done" : "vseg--pledged") + (active === s.id ? " is-active" : ""),
+    className: "vseg vseg--pledged" + (active === s.id ? " is-active" : ""),
     style: {
       bottom: s.start / total * 100 + "%",
       height: s.feet / total * 100 + "%"
@@ -695,7 +553,7 @@ function VRoad({
     const delay = s.mid / total * ROLL_MS + 180;
     return /*#__PURE__*/React.createElement("div", {
       key: "l" + s.id,
-      className: "vlabel" + (s.donated ? "" : " vlabel--pledged") + (isActive ? " is-active" : ""),
+      className: "vlabel vlabel--pledged" + (isActive ? " is-active" : ""),
       style: {
         bottom: s.mid / total * 100 + "%",
         transform: "translateY(50%)" + (isActive ? " scale(1.16)" : ""),
@@ -743,8 +601,7 @@ function ProgressModal({
   onClose,
   pledges,
   pct,
-  pavedFeet,
-  donatedFeet
+  pavedFeet
 }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -763,7 +620,6 @@ function ProgressModal({
     };
   }, [open, onClose]);
   if (!open) return null;
-  const pledgedOnly = pavedFeet - donatedFeet;
   return /*#__PURE__*/React.createElement("div", {
     className: "pmodal" + (mounted ? " is-open" : ""),
     onMouseDown: e => {
@@ -787,7 +643,7 @@ function ProgressModal({
     className: "kicker kicker--center"
   }, "The Road So Far"), /*#__PURE__*/React.createElement("h3", null, "Watch the road ", /*#__PURE__*/React.createElement("em", null, "roll out")), /*#__PURE__*/React.createElement("div", {
     className: "pmodal__big"
-  }, /*#__PURE__*/React.createElement("b", null, fmt(pavedFeet)), " of 2,000 ft underway \xB7 ", pct, "% complete")), /*#__PURE__*/React.createElement(VRoad, {
+  }, /*#__PURE__*/React.createElement("b", null, fmt(pavedFeet)), " of 2,000 ft pledged \xB7 ", pct, "% complete")), /*#__PURE__*/React.createElement(VRoad, {
     pledges: pledges
   })));
 }
@@ -820,11 +676,9 @@ function App() {
     })), 2800);
   }
   const pavedFeet = useMemo(() => pledges.reduce((s, p) => s + p.feet, 0), [pledges]);
-  const donatedFeet = useMemo(() => pledges.filter(p => p.donated).reduce((s, p) => s + p.feet, 0), [pledges]);
   const remaining = Math.max(0, PROJECT.totalFeet - pavedFeet);
   const pct = Math.round(pavedFeet / PROJECT.totalFeet * 100);
   const pledgedLKR = pavedFeet * PROJECT.costPerFoot;
-  const donatedLKR = donatedFeet * PROJECT.costPerFoot;
   function handlePledge({
     name,
     feet,
@@ -835,8 +689,7 @@ function App() {
       id,
       name,
       feet,
-      message,
-      donated: false
+      message
     };
     setPledges(list => [...list, p]);
     setJustPledged(p);
@@ -850,17 +703,6 @@ function App() {
       });
     }, 60);
   }
-  function handleDonate(id) {
-    setPledges(list => list.map(p => p.id === id ? {
-      ...p,
-      donated: true
-    } : p));
-    setJustPledged(jp => jp && jp.id === id ? {
-      ...jp,
-      donated: true
-    } : jp);
-    flash("Sādhu! Your donation completes that stretch of road. 🙏");
-  }
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Nav, null), /*#__PURE__*/React.createElement(Hero, {
     stats: {
       pavedFeet: fmt(pavedFeet),
@@ -872,14 +714,11 @@ function App() {
     pct: pct,
     remaining: remaining,
     onPledge: handlePledge,
-    onDonate: handleDonate,
     justPledged: justPledged,
-    setJustPledged: setJustPledged,
-    newId: newId
+    setJustPledged: setJustPledged
   }), /*#__PURE__*/React.createElement(Budget, {
     pavedFeet: pavedFeet,
-    pledgedLKR: pledgedLKR,
-    donatedLKR: donatedLKR
+    pledgedLKR: pledgedLKR
   }), /*#__PURE__*/React.createElement(CTA, null), /*#__PURE__*/React.createElement(Footer, null), /*#__PURE__*/React.createElement(Toast, {
     msg: toast.msg,
     show: toast.show
@@ -891,9 +730,9 @@ function App() {
     onClose: () => setProgressOpen(false),
     pledges: pledges,
     pct: pct,
-    pavedFeet: pavedFeet,
-    donatedFeet: donatedFeet
+    pavedFeet: pavedFeet
   }));
 }
 ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(App, null));
+
 })();

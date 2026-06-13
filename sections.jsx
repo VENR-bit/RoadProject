@@ -6,33 +6,65 @@ const PROJECT = {
   totalFeet: 2000,
   costPerFoot: 2706,            // LKR per linear foot
   totalBudget: 5412000,        // LKR (2,000 ft × 2,706)
-  fullLengthFt: 1900,
   fullLengthKm: 1.9,
+  fullLengthFt: 6200,          // 1.9 km ≈ 6,200 ft (full road length)
   width: 8,                    // ft
   thickness: 4,                // in
   mapUrl: "https://maps.app.goo.gl/ZbSeubxqA7pg2tbQ6",
 };
 
-const COST_LINES = [
-  { mat: "Cement", sub: "50kg standard bags · 1:3:5 mix", qty: "0.440 bags", rate: "2,050.00", total: "902.00" },
-  { mat: "River Sand", sub: "Fine aggregate", qty: "0.016 cubes", rate: "26,000.00", total: "416.00" },
-  { mat: "Coarse Aggregate", sub: "Crushed metal", qty: "0.028 cubes", rate: "21,000.00", total: "588.00" },
-  { mat: "Direct On-site Labour", sub: "Fixed allocation", qty: "—", rate: "—", total: "800.00" },
+// Where the "Donate" button sends supporters. Replace with the real
+// payment link / bank-details page once provided.
+const DONATE_URL = "#";
+
+// Total material requirement for the 2,000 ft concrete scope (1:3:5 mix).
+const MATERIALS = [
+  { mat: "Cement", sub: "50 kg standard bags", qty: "880", unit: "bags" },
+  { mat: "River Sand", sub: "Fine aggregate", qty: "32", unit: "cubes" },
+  { mat: "Coarse Aggregate", sub: "Crushed metal", qty: "56", unit: "cubes" },
 ];
+const MATERIAL_COST = 3812000;   // LKR — total materials across 2,000 ft
+const LABOUR_COST = 1600000;     // LKR — total direct on-site labour
+
 
 /* ----------------------------- Formatting ------------------------------- */
 const fmt = (n) => Math.round(n).toLocaleString("en-US");
 const LKR = ({ children }) => (<span><span className="lkr">LKR</span> {children}</span>);
 
 /* ----------------------------- Icons ------------------------------------ */
+let _lotusN = 0;
 function Lotus({ className }) {
+  // Unique gradient ids so multiple lotuses on the page don't collide.
+  const uid = useMemo(() => "lt" + (++_lotusN), []);
   return (
-    <svg className={className} viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M32 50c-9 0-17-5-20-12 4-2 9-2 13 0" stroke="var(--saffron)"/>
-      <path d="M32 50c9 0 17-5 20-12-4-2-9-2-13 0" stroke="var(--saffron)"/>
-      <path d="M32 50c-6-3-10-9-10-16 0-4 2-8 4-11" stroke="var(--forest-3)"/>
-      <path d="M32 50c6-3 10-9 10-16 0-4-2-8-4-11" stroke="var(--forest-3)"/>
-      <path d="M32 50c-3-4-4-10-4-16 0-7 2-13 4-18 2 5 4 11 4 18 0 6-1 12-4 16z" stroke="var(--forest)"/>
+    <svg className={"lotus " + (className || "")} viewBox="0 26 200 120" role="img" aria-label="Lotus">
+      <defs>
+        <linearGradient id={uid + "f"} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#9c6c3f" /><stop offset="1" stopColor="#6e4a28" />
+        </linearGradient>
+        <linearGradient id={uid + "b"} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#835833" /><stop offset="1" stopColor="#5d3f23" />
+        </linearGradient>
+        <linearGradient id={uid + "o"} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#6b4626" /><stop offset="1" stopColor="#46301a" />
+        </linearGradient>
+        <linearGradient id={uid + "c"} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#6c5443" /><stop offset="1" stopColor="#443429" />
+        </linearGradient>
+      </defs>
+      <g stroke="#F8F4EB" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round">
+        {/* right-half petals, then mirrored for the left */}
+        <g id={uid + "half"}>
+          <path fill={`url(#${uid}b)`} d="M100 135 Q154.5 124.4 190.9 82.5 Q136.5 93.2 100 135 Z" />
+          <path fill={`url(#${uid}b)`} d="M100 135 Q143.7 100.8 157.2 46.9 Q113.5 81.2 100 135 Z" />
+          <path fill={`url(#${uid}o)`} d="M100 135 Q150.5 141.7 187.5 106.6 Q136.9 99.9 100 135 Z" />
+          <path fill={`url(#${uid}f)`} d="M100 135 Q148.1 118.1 165 70 Q116.9 86.9 100 135 Z" />
+          <path fill={`url(#${uid}f)`} d="M100 135 Q136.4 99.3 131.5 48.5 Q95 84.3 100 135 Z" />
+        </g>
+        <use href={`#${uid}half`} transform="translate(200 0) scale(-1 1)" />
+        {/* central petal on top */}
+        <path fill={`url(#${uid}c)`} d="M100 135 Q115 86 100 37 Q85 86 100 135 Z" />
+      </g>
     </svg>
   );
 }
@@ -81,9 +113,9 @@ function Hero({ stats }) {
       <div className="wrap hero__inner center">
         <div className="hero__lotus"><Lotus /></div>
         <p className="kicker kicker--center">A Path to Stillness</p>
-        <h1>Paving the road to the <span className="h-em">forest monastery</span>.</h1>
+        <h1>Paving the road in concrete to the <span className="h-em">forest monastery</span>.</h1>
         <p className="hero__lede">
-          A quiet gravel track winds 1.9&nbsp;km through the forest to Rideekanda Monastery.
+          A quiet gravel track winds 1.9&nbsp;km (6,200&nbsp;ft) through the forest to Rideekanda Monastery.
           Help us lay <strong>2,000&nbsp;feet</strong> of concrete — one linear foot at a time —
           so that meditation practitioners may walk and travel in peace.
         </p>
@@ -92,7 +124,7 @@ function Hero({ stats }) {
           <a className="btn btn--ghost" href="#about">Learn about the project</a>
         </div>
         <div className="hero__stats">
-          <div className="hero__stat"><div className="num">1.9<small style={{fontSize:18}}>km</small></div><div className="lbl">Full road length</div></div>
+          <div className="hero__stat"><div className="num">1.9<small style={{fontSize:18}}>km</small></div><div className="lbl">Full length · 6,200 ft</div></div>
           <div className="hero__stat"><div className="num">2,000<small style={{fontSize:18}}>ft</small></div><div className="lbl">Concrete to be laid</div></div>
           <div className="hero__stat"><div className="num">{stats.pavedFeet}<small style={{fontSize:18}}>ft</small></div><div className="lbl">Pledged so far</div></div>
           <div className="hero__stat"><div className="num">{stats.pct}<small style={{fontSize:18}}>%</small></div><div className="lbl">Of the way there</div></div>
@@ -117,7 +149,7 @@ function About() {
           </p>
           <div className="factsheet">
             <div className="fact"><div className="fact__k">Purpose</div><div className="fact__v">Reliable road access to the monastery for meditation practitioners and supply vehicles.</div></div>
-            <div className="fact"><div className="fact__k">Full Length</div><div className="fact__v"><strong>1.9 km</strong> &nbsp;of forest track</div></div>
+            <div className="fact"><div className="fact__k">Full Length</div><div className="fact__v"><strong>1.9 km (6,200 ft)</strong> &nbsp;of forest track</div></div>
             <div className="fact"><div className="fact__k">Critical Phase</div><div className="fact__v"><strong>2,000 ft</strong> &nbsp;of concrete road repair — the steepest, most damaged stretch</div></div>
             <div className="fact"><div className="fact__k">Condition</div><div className="fact__v">Unpaved gravel, severe unevenness and off-road ruts — highly difficult for standard vehicles.</div></div>
             <div className="fact"><div className="fact__k">Location</div><div className="fact__v"><a href={PROJECT.mapUrl} target="_blank" rel="noopener">View the site on Google Maps ↗</a></div></div>
@@ -163,35 +195,33 @@ function Tech() {
           <div className="spec"><Ico d={ICONS.layers} className="spec__ico"/><div className="spec__v">880<small> bags</small></div><div className="spec__k">Cement allocation across the full 2,000 ft</div></div>
         </div>
 
-        <div className="costtable">
-          <div className="costtable__head">
-            <div>Material / Element</div>
-            <div className="num">Qty per ft</div>
-            <div className="num">Unit rate</div>
-            <div className="num">Cost / ft</div>
+        <div className="totals">
+          <div className="totals__card">
+            <p className="kicker">Total Material Requirement</p>
+            <ul className="mreq">
+              {MATERIALS.map((m,i)=>(
+                <li key={i}>
+                  <span className="mreq__mat">{m.mat}<small>{m.sub}</small></span>
+                  <b className="mreq__qty">{m.qty}<small> {m.unit}</small></b>
+                </li>
+              ))}
+            </ul>
+            <div className="totals__sum"><span>Total material cost</span><b><LKR>{fmt(MATERIAL_COST)}</LKR></b></div>
           </div>
-          {COST_LINES.map((r,i)=>(
-            <div className="costrow" key={i}>
-              <div className="mat">{r.mat}<span>{r.sub}</span></div>
-              <div className="num" data-l="Qty/ft">{r.qty}</div>
-              <div className="num" data-l="Rate">{r.rate}</div>
-              <div className="num" data-l="Cost/ft">{r.total}</div>
-            </div>
-          ))}
-          <div className="costrow costrow--total">
-            <div className="mat">Total per linear foot</div>
-            <div className="num"></div>
-            <div className="num"></div>
-            <div className="num" data-l="Total">2,706.00</div>
+          <div className="totals__card">
+            <p className="kicker">Total Cost of Labour</p>
+            <p className="totals__note">Direct on-site labour for the full 2,000&nbsp;ft concrete scope — mixing,
+              laying, levelling and finishing the 1:3:5 slab across the uneven terrain.</p>
+            <div className="totals__sum"><span>Total labour cost</span><b><LKR>{fmt(LABOUR_COST)}</LKR></b></div>
           </div>
         </div>
-        <p style={{textAlign:"center", fontSize:13.5, color:"var(--ink-faint)", marginTop:18}}>
-          Master project budget for the full 2,000 ft scope: <strong style={{color:"var(--forest)"}}>LKR 5,412,000</strong> ·
-          includes a standard engineering contingency buffer for the uneven terrain.
-        </p>
+        <div className="grandtotal">
+          <span>Master project budget · 2,000&nbsp;ft concrete scope</span>
+          <b><LKR>{fmt(PROJECT.totalBudget)}</LKR></b>
+        </div>
       </div>
     </section>
   );
 }
 
-Object.assign(window, { React, useState, useEffect, useRef, useMemo, PROJECT, COST_LINES, fmt, LKR, Lotus, Ico, ICONS, Nav, Hero, About, Tech });
+Object.assign(window, { React, useState, useEffect, useRef, useMemo, PROJECT, DONATE_URL, MATERIALS, MATERIAL_COST, LABOUR_COST, fmt, LKR, Lotus, Ico, ICONS, Nav, Hero, About, Tech });
