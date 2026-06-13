@@ -386,6 +386,10 @@ function VRoad({ pledges }) {
   const [active, setActive] = useState(null);
   const [caret, setCaret] = useState(null);
   const [rolling, setRolling] = useState(true);
+  const [threeD, setThreeD] = useState(() =>
+    !(typeof window !== "undefined" && window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+  );
   const stageRef = useRef(null);
 
   useEffect(() => {
@@ -407,12 +411,18 @@ function VRoad({ pledges }) {
 
   return (
     <div className="vstage" ref={stageRef} onPointerMove={locate} onPointerDown={locate} onPointerLeave={clear}>
+      <button type="button" className={"v3dtoggle" + (threeD ? " is-on" : "")}
+        onClick={() => setThreeD((v) => !v)} aria-pressed={threeD}
+        title="Toggle Cover Flow depth">
+        <span className="v3dtoggle__ico" aria-hidden="true" />
+        {threeD ? "Cover Flow" : "Flat view"}
+      </button>
       <div className="vlegend">
         <span><i className="vleg--done" /> Completed <b>{fmt(donatedFeet)}{"\u00a0"}ft</b></span>
         <span><i className="vleg--pledged" /> Pledged <b>{fmt(pledgedFeet)}{"\u00a0"}ft</b></span>
         <span><i className="vleg--open" /> To be paved <b>{fmt(blankFeet)}{"\u00a0"}ft</b></span>
       </div>
-      <div className={"vroad" + (rolling ? " vroad--rolling" : "")} style={{ "--roll-ms": ROLL_MS + "ms" }}>
+      <div className={"vroad" + (rolling ? " vroad--rolling" : "") + (threeD ? " vroad--3d" : "")} style={{ "--roll-ms": ROLL_MS + "ms" }}>
         <span className="vcap vcap--bot">0 ft</span>
         <span className="vcap vcap--top">2,000 ft</span>
         <div className="vroad-track">
@@ -420,7 +430,7 @@ function VRoad({ pledges }) {
             {spans.map((s) => (
               <div key={s.id}
                 className={"vseg " + (s.donated ? "vseg--done" : "vseg--pledged") + (active === s.id ? " is-active" : "")}
-                style={{ bottom: (s.start / total) * 100 + "%", height: (s.feet / total) * 100 + "%" }} />
+                style={{ bottom: (s.start / total) * 100 + "%", height: (s.feet / total) * 100 + "%", "--d": s.mid / total }} />
             ))}
           </div>
         </div>
@@ -435,10 +445,12 @@ function VRoad({ pledges }) {
         {spans.map((s) => {
           const isActive = active === s.id;
           const delay = (s.mid / total) * ROLL_MS + 180;
+          let tf = "translateY(50%)";
+          if (isActive) tf += threeD ? " translateZ(64px) rotateX(-26deg) scale(1.14)" : " scale(1.16)";
           return (
             <div key={"l" + s.id}
               className={"vlabel" + (s.donated ? "" : " vlabel--pledged") + (isActive ? " is-active" : "")}
-              style={{ bottom: (s.mid / total) * 100 + "%", transform: "translateY(50%)" + (isActive ? " scale(1.16)" : ""), animationDelay: delay + "ms" }}
+              style={{ bottom: (s.mid / total) * 100 + "%", transform: tf, animationDelay: delay + "ms", "--d": s.mid / total }}
               onMouseEnter={() => setActive(s.id)} onMouseLeave={() => setActive(null)}>
               <span><span className="vlabel__ft">{s.feet}ft</span> {s.name}</span>
               <span className="vlabel__dot" />
