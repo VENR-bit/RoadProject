@@ -149,10 +149,12 @@ function Lotus({
 }
 function Ico({
   d,
-  className
+  className,
+  style
 }) {
   return /*#__PURE__*/React.createElement("svg", {
     className: className,
+    style: style,
     viewBox: "0 0 24 24",
     fill: "none",
     stroke: "currentColor",
@@ -474,5 +476,4 @@ Object.assign(window, {
   About,
   Tech
 });
-
 })();
